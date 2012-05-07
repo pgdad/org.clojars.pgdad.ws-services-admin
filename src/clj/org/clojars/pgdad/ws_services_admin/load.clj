@@ -1,4 +1,4 @@
-(ns org.clojars.pgdad.ws-services-admin.services
+(ns org.clojars.pgdad.ws-services-admin.load
   (:require [zookeeper :as zk]
             [clj-zoo-watcher.multi :as mw]
             [clojure.tools.logging :as log]

@@ -1,30 +1,50 @@
 (ns org.clojars.pgdad.ws-services-admin.core
-  (:require [org.clojars.pgdad.ws-services-admin.services :as services])
+  (:require [org.clojars.pgdad.ws-services-admin.load :as loadservice]
+            [org.clojars.pgdad.ws-services-admin.active :as activeservice]
+            [org.clojars.pgdad.ws-services-admin.passive :as passiveservice])
   (:use lamina.core
         aleph.http
         (ring.middleware resource file-info)
         (hiccup core page)))
 
-(def init-messages
-  '("add item1",
-    ))
-
 (defn load-handler [channel]
-  ;; (doseq [m init-messages]
-  ;;   (enqueue channel m))
-  (let [servs (services/initialize "localhost/CbbServices" "PROD" "SI")
+  (let [servs (loadservice/initialize "localhost/CbbServices" "PROD" "SI")
         ch (:channel @servs)
-        fch (fork ch)]
+        ]
     (on-closed channel #(do
                           (println "LOAD HANDLER CLIENT CLOSED CHANNEL")
-                          (services/close servs))
+                          (loadservice/close servs))
                )
     (siphon ch channel)
-    (receive-all fch #(println (str "IN FORK: " %)))
     )
 )
 
-(defn page []
+(defn active-handler [channel]
+  (let [servs (activeservice/initialize "localhost/CbbServices" "PROD" "SI")
+        ch (:channel @servs)
+        ]
+    (on-closed channel #(do
+                          (println "ACTIVE HANDLER CLIENT CLOSED CHANNEL")
+                          (loadservice/close servs))
+               )
+    (siphon ch channel)
+    )
+)
+
+(defn passive-handler [channel]
+  (let [servs (passiveservice/initialize "localhost/CbbServices" "PROD" "SI")
+        ch (:channel @servs)
+        ]
+    (on-closed channel #(do
+                          (println "PASSIVE HANDLER CLIENT CLOSED CHANNEL")
+                          (loadservice/close servs))
+               )
+    (siphon ch channel)
+    )
+)
+
+
+(defn load []
   (html5
    [:head]
    [:body#thebody
@@ -40,23 +60,100 @@
 
     [:h1 "WebSocket PRE"]
     [:h1 "WebSocket Message"]
-    (include-js "/js/app.js")]))
+    (include-js "/js/load.js")]))
 
-(defn sync-app [request]
+(defn passive []
+  (html5
+   [:head]
+   [:body#thebody
+    [:h1 "Passivated Services"]
+    [:table#thetable {:border 0 :cellpadding 3}
+     [:thead
+      [:tr
+       [:th "Region"]
+       [:th "Node"]
+       [:th "Service"]
+       [:th "Major"]
+       [:th "Minor"]
+       [:th "Micro"]
+       [:th "URL"]
+       ]]
+     [:tbody#thetablebody]]
+
+    [:h1 "WebSocket Message"]
+    (include-js "/js/passive.js")]))
+
+(defn active []
+  (html5
+   [:head]
+   [:body#thebody
+    [:h1 "Active Services"]
+    [:table#thetable {:border 0 :cellpadding 3}
+     [:thead
+      [:tr
+       [:th "Region"]
+       [:th "Node"]
+       [:th "Service"]
+       [:th "Major"]
+       [:th "Minor"]
+       [:th "Micro"]
+       [:th "URL"]
+       ]]
+     [:tbody#thetablebody]]
+
+    [:h1 "WebSocket Message"]
+    (include-js "/js/active.js")]))
+
+(defn sync-app [f request]
   {:status 200
    :headers {"content-type" "text/html"}
-   :body (page)})
+   :body (f)})
 
-(def wrapped-sync-app
-  (-> sync-app
+(def wrapped-load-app
+  (-> (partial sync-app load)
+      (wrap-resource "public")
+      (wrap-file-info)))
+
+(def wrapped-passive-app
+  (-> (partial sync-app passive)
+      (wrap-resource "public")
+      (wrap-file-info)))
+
+(def wrapped-active-app
+  (-> (partial sync-app active)
       (wrap-resource "public")
       (wrap-file-info)))
 
 (defn app [channel request]
-  (println (str "APP: " request))
-  (if (:websocket request)
-    (load-handler channel)
-    (enqueue channel (wrapped-sync-app request))))
+  (let [uri (:uri request)]
+    (println (str "URI: " uri))
+    (if (:websocket request)
+      (cond
+       ;; load
+       (= uri "/load")
+       (load-handler channel)
+       ;; active services
+       (= uri "/active")
+       (active-handler channel)
+       ;; passive services
+       (= uri "/passive")
+       (passive-handler channel)
+        )
+      
+      
+      (cond
+       ;; load
+       (= uri "/load")
+       (enqueue channel (wrapped-load-app request))
+       ;; active services
+       (= uri "/active")
+       (enqueue channel (wrapped-active-app request))
+       ;; passive services
+       (= uri "/passive")
+       (enqueue channel (wrapped-passive-app request))
+       :else
+       (enqueue channel (wrapped-load-app request))
+       ))))
 
 (defn -main [& args]
   (start-http-server app {:port 8080 :websocket true}))

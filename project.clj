@@ -5,16 +5,22 @@
                  [aleph "0.3.0-alpha1"]
                  [ring "1.1.0"]
                  [hiccup "1.0.0"]
-                 [org.clojure/clojurescript "0.0-1006"]
+                 [org.clojure/clojurescript "0.0-1011"]
                  [clj-zoo-watcher "1.0.7"]
                  [zookeeper-clj "0.9.2"]]
   :source-path "src/clj"
   :extra-classpath-dirs ["src/cljs"]
-  :plugins [[lein-cljsbuild "0.1.5"]]
+  :plugins [[lein-cljsbuild "0.1.8"]]
   :cljsbuild {:builds
-              [{:source-path "src/cljs"
-                :compiler {:output-to "resources/public/js/app.js"
+              [{:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/load"
+                :compiler {:output-to "resources/public/js/load.js"
+                           :optimizations :simple :pretty-print true}}
+               {:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/active"
+                :compiler {:output-to "resources/public/js/active.js"
+                           :optimizations :simple :pretty-print true}}
+               {:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/passive"
+                :compiler {:output-to "resources/public/js/passive.js"
                            :optimizations :simple :pretty-print true}}]}
-  :ring {:handler .core/app}
-  :main board.core)
+  :ring {:handler org.clojars.pgdad.ws-sservices-admin.core/app}
+  :main org.clojars.pgdad.ws-services-admin.core)
 

@@ -1,6 +1,6 @@
 # org.clojars.pgdad.ws-services-admin
 
-FIXME: write description
+websocket application to admin clj-zoo services
 
 ## Usage
 
@@ -8,6 +8,6 @@ FIXME: write
 
 ## License
 
-Copyright (C) 2012 FIXME
+Copyright (C) 2012 pgdad
 
 Distributed under the Eclipse Public License, the same as Clojure.

@@ -1,4 +1,4 @@
-(ns board.core
+(ns org.clojars.pgdad.ws-services-admin.load.core
   (:require [goog.ui.TableSorter :as TableSorter]
             [clojure.string :as cstr]))
 
