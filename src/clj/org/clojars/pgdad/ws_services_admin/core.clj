@@ -85,7 +85,9 @@
 
 (defn active []
   (html5
-   [:head]
+   [:head
+     [:style {:type "text/css"}
+        ".act {background:red;} .acted {background:black;}"]]
    [:body#thebody
     [:h1 "Active Services"]
     [:table#thetable {:border 0 :cellpadding 3}

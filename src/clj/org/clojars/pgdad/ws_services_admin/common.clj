@@ -71,6 +71,7 @@
          (.appendChild cell6 (.createTextNode js/document url))
          (let [button (.createElement js/document "button")]
            (.setAttribute button "value" "THENODE")
+           (.setAttribute button "class" "act")
            (.setAttribute cell7 "type" "button")
            (.appendChild cell7 button)
            )
