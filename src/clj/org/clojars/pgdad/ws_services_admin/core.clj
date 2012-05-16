@@ -1,11 +1,15 @@
 (ns org.clojars.pgdad.ws-services-admin.core
   (:require [org.clojars.pgdad.ws-services-admin.load :as loadservice]
             [org.clojars.pgdad.ws-services-admin.active :as activeservice]
-            [org.clojars.pgdad.ws-services-admin.passive :as passiveservice])
+            [org.clojars.pgdad.ws-services-admin.passive :as passiveservice]
+            [zookeeper :as zk]
+            [clj-zoo.serverSession :as srv])
   (:use lamina.core
         aleph.http
         (ring.middleware resource file-info)
         (hiccup core page)))
+
+(def ^:dynamic *keepers* nil)
 
 (defn load-handler [channel]
   (let [servs (loadservice/initialize "localhost/CbbServices" "PROD" "SI")
@@ -25,8 +29,15 @@
         ]
     (on-closed channel #(do
                           (println "ACTIVE HANDLER CLIENT CLOSED CHANNEL")
-                          (loadservice/close servs))
-               )
+                          (loadservice/close servs)))
+    (receive-all channel #(do
+                            (println (str "RECEIVED FROM ACTIVE: " %))
+                            (println (str " KEEPERS: " *keepers*))
+                            (let [z (zk/connect *keepers*)
+                                  p-node (srv/my-passivation-request-node %)]
+                              (println (str " -->" p-node))
+                              (srv/request-passivation z % )
+                              (zk/close z))))
     (siphon ch channel)
     )
 )
@@ -158,5 +169,6 @@
        (enqueue channel (wrapped-load-app request))
        ))))
 
-(defn -main [& args]
+(defn -main [keepers & args]
+  (def *keepers* keepers)
   (start-http-server app {:port 8080 :websocket true}))

@@ -9,4 +9,6 @@
             [clojure.string :as cstr])
   (:require-macros [org.clojars.pgdad.ws-services-admin.common :as common]))
 
-(common/service-tracking-ws-client true)
+(def active true)
+
+(common/service-tracking-ws-client)

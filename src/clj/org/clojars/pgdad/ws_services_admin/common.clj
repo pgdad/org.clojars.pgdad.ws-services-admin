@@ -2,7 +2,7 @@
 
 ;; Common functionality for both active and passive
 
-(defmacro service-tracking-ws-client [active?]
+(defmacro service-tracking-ws-client []
   '(do
      (def surl js/window.location.href)
 
@@ -51,7 +51,10 @@
      (defn- element-id [node]
        (cstr/replace node "/" ""))
 
-     (def actTooltipMsg "Click on this button to request passivation of the service.")
+     (def actTooltipMsg
+       (str "Click on this button to request "
+            (if active "passivation" "activation"
+                " of the service.")))
 
      (defn addrow [tbl region node service major minor micro url]
        (let [l (.-length (.-rows tbl))
@@ -81,10 +84,10 @@
            (.setAttribute cell7 "type" "button")
            (.appendChild cell7 button)
            (goog.events.listen googButton
-              (.-ACTION goog.ui.Component.EventType)
-              #(do
-                 (.setAttribute button "class" "acted")
-                 (js/alert (str "THE VALUE IS: " (.getAttribute button "value")))))
+                               (.-ACTION goog.ui.Component.EventType)
+                               #(do
+                                  (.setAttribute button "class" "acted")
+                                  (.send socket (.getAttribute button "value"))))
            )
          (.setAttribute row "id"  (cstr/replace node "/" ""))
          (resort)
