@@ -68,28 +68,7 @@
     [:h1 "WebSocket Message"]
     (include-js "/js/load.js")]))
 
-(defn passive []
-  (html5
-   [:head]
-   [:body#thebody
-    [:h1 "Passivated Services"]
-    [:table#thetable {:border 0 :cellpadding 3}
-     [:thead
-      [:tr
-       [:th "Region"]
-       [:th "Node"]
-       [:th "Service"]
-       [:th "Major"]
-       [:th "Minor"]
-       [:th "Micro"]
-       [:th "URL"]
-       ]]
-     [:tbody#thetablebody]]
-
-    [:h1 "WebSocket Message"]
-    (include-js "/js/passive.js")]))
-
-(defn active []
+(defn active-passive [page]
   (html5
    [:head
      [:style {:type "text/css"}
@@ -111,7 +90,11 @@
      [:tbody#thetablebody]]
 
     [:h1 "WebSocket Message"]
-    (include-js "/js/active.js")]))
+    (include-js (str "/js/" page ".js"))]))
+
+(def active (partial active-passive "active"))
+
+(def passive (partial active-passive "passive"))
 
 (defn sync-app [f request]
   {:status 200
