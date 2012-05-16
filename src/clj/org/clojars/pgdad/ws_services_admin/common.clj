@@ -105,9 +105,6 @@
            #(do (let [msg (.-data %)
                       msg-parts (cstr/split msg splitter)
                       action (first msg-parts)]
-                  (if-not thetable
-                    (-> thebody (apptext "THE TABLE IS NOT DEFINED."))
-                    (-> thebody (apptext (str "RECEIVED: " msg))))
                   (cond
                    ;; created
                    (= action "c")
@@ -126,9 +123,9 @@
                      (rmnode node))
                    ))))
 
-     (set! (.-onclose socket) #(do (-> thebody (apptext "SERVER CONN CLOSED."))))
-
-     )
-  )
-
-
+     (set! (.-onclose socket)
+           #(do
+              (-> thebody (apptext "SERVER CONN CLOSED."))
+              (doseq [rmrow (range (.-length (.-rows thetablebody)))]
+                (.deleteRow thetablebody 0))))
+  ))
