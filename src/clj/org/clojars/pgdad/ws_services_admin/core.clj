@@ -64,7 +64,6 @@
        [:th "Load"]]]
      [:tbody#thetablebody]]
 
-    [:h1 "WebSocket PRE"]
     [:h1 "WebSocket Message"]
     (include-js "/js/load.js")]))
 
@@ -88,7 +87,6 @@
        ]]
      [:tbody#thetablebody]]
 
-    [:h1 "WebSocket Message"]
     (include-js (str "/js/" page ".js"))]))
 
 (def active (partial active-passive "active"))
