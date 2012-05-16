@@ -23,37 +23,32 @@
     )
 )
 
-(defn active-handler [channel]
-  (let [servs (activeservice/initialize "localhost/CbbServices" "PROD" "SI")
+(defn- service-handler [init-f node-f channel]
+  (let [servs (init-f)
         ch (:channel @servs)
         ]
     (on-closed channel #(do
-                          (println "ACTIVE HANDLER CLIENT CLOSED CHANNEL")
-                          (loadservice/close servs)))
+                           (println "ACTIVE HANDLER CLIENT CLOSED CHANNEL")
+                           (loadservice/close servs)))
     (receive-all channel #(do
-                            (println (str "RECEIVED FROM ACTIVE: " %))
-                            (println (str " KEEPERS: " *keepers*))
-                            (let [z (zk/connect *keepers*)
-                                  p-node (srv/my-passivation-request-node %)]
-                              (println (str " -->" p-node))
-                              (srv/request-passivation z % )
-                              (zk/close z))))
-    (siphon ch channel)
-    )
-)
+                             (println (str "RECEIVED FROM ACTIVE: " %))
+                             (println (str " KEEPERS: " *keepers*))
+                             (let [z (zk/connect *keepers*)]
+                               (node-f z %)
+                               (zk/close z))))
+    (siphon ch channel)))
 
-(defn passive-handler [channel]
-  (let [servs (passiveservice/initialize "localhost/CbbServices" "PROD" "SI")
-        ch (:channel @servs)
-        ]
-    (on-closed channel #(do
-                          (println "PASSIVE HANDLER CLIENT CLOSED CHANNEL")
-                          (loadservice/close servs))
-               )
-    (siphon ch channel)
-    )
-)
+(def active-handler (partial service-handler
+                             (fn []
+                               (activeservice/initialize "localhost/CbbServices" "PROD" "SI"))
+                             #(srv/request-passivation %1 %2)
+                             ))
 
+(def passive-handler (partial service-handler
+                              (fn []
+                                (passiveservice/initialize "localhost/CbbServices" "PROD" "SI"))
+                              #(srv/request-activation %1 %2)
+                              ))
 
 (defn load []
   (html5

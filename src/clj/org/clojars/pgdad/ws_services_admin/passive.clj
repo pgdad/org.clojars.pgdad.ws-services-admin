@@ -2,13 +2,22 @@
   (:require [zookeeper :as zk]
             [clj-zoo-watcher.multi :as mw]
             [clojure.tools.logging :as log]
-            [lamina.core :as lc])
+            [lamina.core :as lc]
+            [clojure.string :as cstr])
   (:gen-class))
 
 (defn- service-created
   [client channel region _ node]
-  (let [data (String. (:data (zk/data client node)) "UTF-8")]
-    (lc/enqueue channel (str "c " region " " node " " data "\n"))))
+  (println (str "PASSIVE service created: " node))
+  (let [data (String. (:data (zk/data client node)) "UTF-8")
+        [_ _ url] (clojure.string/split-lines data)
+        _ (println (cstr/split node (re-pattern "/")))
+        [_ _ _ _ _ service major minor micro] (cstr/split node (re-pattern "/"))
+        msg (str "c " region " " node " "
+                 service " " major " "
+                 minor " " micro " " url "\n")]
+    (println (str "SENDING: " msg))
+    (lc/enqueue channel msg)))
 
 (defn- service-deleted
   [channel region _ node]
@@ -20,7 +29,7 @@
   (let [client (zk/connect keepers)
         ch (lc/channel* :transactional? true)
         data-ref (ref {})
-        servers-root (str "/"  env "/" app "/servers")
+        servers-root (str "/"  env "/" app "/passiveservices")
         mw (mw/child-watchers
             client servers-root
             data-ref
@@ -38,3 +47,4 @@
   (let [mw (:m-ref @m-ref)
         connection (:connection @mw)]
     (zk/close connection)))
+
