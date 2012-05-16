@@ -31,11 +31,10 @@
        (.decorate sortingtable thetable)
        (.setSortFunction sortingtable 0 TableSorter/alphaSort)
        (.setSortFunction sortingtable 1 TableSorter/alphaSort)
-       (.setSortFunction sortingtable 2 TableSorter/alphaSort)
+       (.setSortFunction sortingtable 2 TableSorter/numericSort)
        (.setSortFunction sortingtable 3 TableSorter/numericSort)
        (.setSortFunction sortingtable 4 TableSorter/numericSort)
-       (.setSortFunction sortingtable 5 TableSorter/numericSort)
-       (.setSortFunction sortingtable 6 TableSorter/alphaSort)
+       (.setSortFunction sortingtable 5 TableSorter/alphaSort)
        (.sort sortingtable 0 false)
        )
 
@@ -65,15 +64,13 @@
              cell3 (.insertCell row 3)
              cell4 (.insertCell row 4)
              cell5 (.insertCell row 5)
-             cell6 (.insertCell row 6)
-             cell7 (.insertCell row 7)]
+             cell6 (.insertCell row 6)]
          (.appendChild cell0 (.createTextNode js/document region))
-         (.appendChild cell1 (.createTextNode js/document node))
-         (.appendChild cell2 (.createTextNode js/document service))
-         (.appendChild cell3 (.createTextNode js/document major))
-         (.appendChild cell4 (.createTextNode js/document minor))
-         (.appendChild cell5 (.createTextNode js/document micro))
-         (.appendChild cell6 (.createTextNode js/document url))
+         (.appendChild cell1 (.createTextNode js/document service))
+         (.appendChild cell2 (.createTextNode js/document major))
+         (.appendChild cell3 (.createTextNode js/document minor))
+         (.appendChild cell4 (.createTextNode js/document micro))
+         (.appendChild cell5 (.createTextNode js/document url))
          (let [button (.createElement js/document "button")
                btnTooltip (goog.ui.Tooltip. button actTooltipMsg)
                googButton (goog.ui.Button. button)]
@@ -81,8 +78,8 @@
            (.decorate googButton button)
            (.setAttribute button "value" node)
            (.setAttribute button "class" "act")
-           (.setAttribute cell7 "type" "button")
-           (.appendChild cell7 button)
+           (.setAttribute cell6 "type" "button")
+           (.appendChild cell6 button)
            (goog.events.listen googButton
                                (.-ACTION goog.ui.Component.EventType)
                                #(do

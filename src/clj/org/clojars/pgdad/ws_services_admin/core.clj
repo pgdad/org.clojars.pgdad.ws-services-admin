@@ -80,7 +80,6 @@
      [:thead
       [:tr
        [:th "Region"]
-       [:th "Node"]
        [:th "Service"]
        [:th "Major"]
        [:th "Minor"]
