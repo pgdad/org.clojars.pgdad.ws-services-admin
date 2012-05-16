@@ -87,7 +87,8 @@
   (html5
    [:head
      [:style {:type "text/css"}
-        ".act {background:red;} .acted {background:black;}"]]
+      ".act {background:red;} .acted {background:black;}
+       .ButtonTooltip { background: #C0C0FF; color: infotext; border: 1px solid infotext; padding: 1px;}"]]
    [:body#thebody
     [:h1 "Active Services"]
     [:table#thetable {:border 0 :cellpadding 3}

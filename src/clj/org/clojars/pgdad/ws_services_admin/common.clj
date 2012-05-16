@@ -51,6 +51,8 @@
      (defn- element-id [node]
        (cstr/replace node "/" ""))
 
+     (def actTooltipMsg "Click on this button to request passivation of the service.")
+
      (defn addrow [tbl region node service major minor micro url]
        (let [l (.-length (.-rows tbl))
              row (.insertRow tbl l)
@@ -69,11 +71,20 @@
          (.appendChild cell4 (.createTextNode js/document minor))
          (.appendChild cell5 (.createTextNode js/document micro))
          (.appendChild cell6 (.createTextNode js/document url))
-         (let [button (.createElement js/document "button")]
-           (.setAttribute button "value" "THENODE")
+         (let [button (.createElement js/document "button")
+               btnTooltip (goog.ui.Tooltip. button actTooltipMsg)
+               googButton (goog.ui.Button. button)]
+           (set! (.-className btnTooltip) "ButtonTooltip")
+           (.decorate googButton button)
+           (.setAttribute button "value" node)
            (.setAttribute button "class" "act")
            (.setAttribute cell7 "type" "button")
            (.appendChild cell7 button)
+           (goog.events.listen googButton
+              (.-ACTION goog.ui.Component.EventType)
+              #(do
+                 (.setAttribute button "class" "acted")
+                 (js/alert (str "THE VALUE IS: " (.getAttribute button "value")))))
            )
          (.setAttribute row "id"  (cstr/replace node "/" ""))
          (resort)
