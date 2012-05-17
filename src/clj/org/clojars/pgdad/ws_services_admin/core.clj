@@ -12,7 +12,7 @@
 (def ^:dynamic *keepers* nil)
 
 (defn load-handler [channel]
-  (let [servs (loadservice/initialize "localhost/CbbServices" "PROD" "SI")
+  (let [servs (loadservice/initialize *keepers*)
         ch (:channel @servs)
         ]
     (on-closed channel #(do
@@ -28,10 +28,10 @@
         ch (:channel @servs)
         ]
     (on-closed channel #(do
-                           (println "ACTIVE HANDLER CLIENT CLOSED CHANNEL")
+                           (println "HANDLER CLIENT CLOSED CHANNEL")
                            (loadservice/close servs)))
     (receive-all channel #(do
-                             (println (str "RECEIVED FROM ACTIVE: " %))
+                             (println (str "RECEIVED: " %))
                              (println (str " KEEPERS: " *keepers*))
                              (let [z (zk/connect *keepers*)]
                                (node-f z %)
@@ -40,13 +40,13 @@
 
 (def active-handler (partial service-handler
                              (fn []
-                               (activeservice/initialize "localhost/CbbServices" "PROD" "SI"))
+                               (activeservice/initialize *keepers*))
                              #(srv/request-passivation %1 %2)
                              ))
 
 (def passive-handler (partial service-handler
                               (fn []
-                                (passiveservice/initialize "localhost/CbbServices" "PROD" "SI"))
+                                (passiveservice/initialize *keepers*))
                               #(srv/request-activation %1 %2)
                               ))
 

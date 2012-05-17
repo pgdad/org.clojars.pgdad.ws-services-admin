@@ -8,8 +8,8 @@
   (:gen-class))
 
 (defn initialize
-  [keepers env app]
-  (service/initialize keepers "services" env app))
+  [keepers]
+  (service/initialize keepers "services"))
 
 (defn close
   [m-ref]

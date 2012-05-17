@@ -13,7 +13,7 @@
   (let [data (String. (:data (zk/data client node)) "UTF-8")
         [_ _ url] (clojure.string/split-lines data)
         _ (println (cstr/split node (re-pattern "/")))
-        [_ _ _ _ _ service major minor micro] (cstr/split node (re-pattern "/"))
+        [_ _ _ service major minor micro] (cstr/split node (re-pattern "/"))
         msg (str "c " region " " node " "
                  service " " major " "
                  minor " " micro " " url "\n")]
@@ -25,11 +25,11 @@
 
 
 (defn initialize
-  [keepers service-path env app]
+  [keepers service-path]
   (let [client (zk/connect keepers)
         ch (lc/channel* :transactional? true)
         data-ref (ref {})
-        servers-root (str "/"  env "/" app "/" service-path)
+        servers-root (str "/" service-path)
         mw (mw/child-watchers
             client servers-root
             data-ref
