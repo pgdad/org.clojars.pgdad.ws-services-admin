@@ -9,10 +9,10 @@
         (ring.middleware resource file-info)
         (hiccup core page)))
 
-(def ^:dynamic *keepers* nil)
+(declare *keepers*)
 
 (defn load-handler [channel]
-  (let [servs (loadservice/initialize "localhost/CbbServices" "PROD" "SI")
+  (let [servs (loadservice/initialize *keepers*)
         ch (:channel @servs)
         ]
     (on-closed channel #(do
@@ -28,10 +28,10 @@
         ch (:channel @servs)
         ]
     (on-closed channel #(do
-                           (println "ACTIVE HANDLER CLIENT CLOSED CHANNEL")
+                           (println "HANDLER CLIENT CLOSED CHANNEL")
                            (loadservice/close servs)))
     (receive-all channel #(do
-                             (println (str "RECEIVED FROM ACTIVE: " %))
+                             (println (str "RECEIVED: " %))
                              (println (str " KEEPERS: " *keepers*))
                              (let [z (zk/connect *keepers*)]
                                (node-f z %)
@@ -40,13 +40,13 @@
 
 (def active-handler (partial service-handler
                              (fn []
-                               (activeservice/initialize "localhost/CbbServices" "PROD" "SI"))
+                               (activeservice/initialize *keepers*))
                              #(srv/request-passivation %1 %2)
                              ))
 
 (def passive-handler (partial service-handler
                               (fn []
-                                (passiveservice/initialize "localhost/CbbServices" "PROD" "SI"))
+                                (passiveservice/initialize *keepers*))
                               #(srv/request-activation %1 %2)
                               ))
 
@@ -74,7 +74,7 @@
       ".act {background:red;} .acted {background:black;}
        .ButtonTooltip { background: #C0C0FF; color: infotext; border: 1px solid infotext; padding: 1px;}"]]
    [:body#thebody
-    [:h1 "Active Services"]
+    [:h1 (str "Services " page)]
     [:table#thetable {:border 0 :cellpadding 3}
      [:thead
       [:tr
@@ -115,7 +115,6 @@
 
 (defn app [channel request]
   (let [uri (:uri request)]
-    (println (str "URI: " uri))
     (if (:websocket request)
       (cond
        ;; load
@@ -146,4 +145,7 @@
 
 (defn -main [keepers & args]
   (def *keepers* keepers)
-  (start-http-server app {:port 8080 :websocket true}))
+  (try (start-http-server app {:port 8080 :websocket true})
+       (catch Exception ex (do
+                             (println (str "EXCEPTION: " ex))
+                             (.printStackTrace ex)))))

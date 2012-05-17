@@ -20,11 +20,11 @@
   (lc/enqueue channel (str "l " region " " node " " (String. data "UTF-8"))))
 
 (defn initialize
-  [keepers env app]
+  [keepers]
   (let [client (zk/connect keepers)
         ch (lc/channel* :transactional? true)
         data-ref (ref {})
-        servers-root (str "/"  env "/" app "/servers")
+        servers-root "/servers"
         mw (mw/child-watchers
             client servers-root
             data-ref
