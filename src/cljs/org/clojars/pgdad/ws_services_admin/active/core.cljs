@@ -1,5 +1,6 @@
 (ns org.clojars.pgdad.ws-services-admin.active.core
-  (:require [goog.ui.TableSorter :as TableSorter]
+  (:require [goog.async.Delay :as Delay]
+            [goog.ui.TableSorter :as TableSorter]
             [goog.ui.Tooltip :as Tooltip]
             [goog.ui.Button :as Button]
             [goog.ui.decorate :as decorate]

@@ -42,10 +42,21 @@
        (.appendChild c (.createTextNode js/document txt))
        (.appendChild c (.createElement js/document "br")))
 
-     (defn resort []
+     (defn- resort []
        (let [sortcolumn (.getSortColumn sortingtable)
              isreversed (.isSortReversed sortingtable)]
          (.sort sortingtable sortcolumn isreversed)))
+
+     (def delay (atom nil))
+
+     (def resortDelayMS 100)
+     
+     (defn- doDelayedResort
+       []
+       (if-not @delay
+         (swap! delay (fn [& args] (goog.async.Delay. resort resortDealyMS)))
+         (start @delay))
+       )
 
      (defn- element-id [node]
        (cstr/replace node "/" ""))
@@ -87,7 +98,7 @@
                                   (.send socket (.getAttribute button "value"))))
            )
          (.setAttribute row "id"  (cstr/replace node "/" ""))
-         (resort)
+         (doDelayedResort)
          ))
 
      (defn rmnode [node]
@@ -95,7 +106,7 @@
              rmrow ($$ elementid)]
          (-> thetablebody (.removeChild rmrow))
          )
-       (resort)
+       (doDelayedResort)
        )
 
      (set! (.-onmessage socket)

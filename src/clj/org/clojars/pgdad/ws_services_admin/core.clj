@@ -31,8 +31,6 @@
                            (println "HANDLER CLIENT CLOSED CHANNEL")
                            (loadservice/close servs)))
     (receive-all channel #(do
-                             (println (str "RECEIVED: " %))
-                             (println (str " KEEPERS: " *keepers*))
                              (let [z (zk/connect *keepers*)]
                                (node-f z %)
                                (zk/close z))))
