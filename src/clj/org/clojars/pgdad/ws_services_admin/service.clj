@@ -12,7 +12,6 @@
   [client channel region _ node]
   (let [data (String. (:data (zk/data client node)) "UTF-8")
         [_ _ url] (clojure.string/split-lines data)
-        _ (println (cstr/split node (re-pattern "/")))
         [_ _ _ service major minor micro] (cstr/split node (re-pattern "/"))
         msg (str "c " region " " node " "
                  service " " major " "

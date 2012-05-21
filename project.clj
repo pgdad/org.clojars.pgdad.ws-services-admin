@@ -7,7 +7,7 @@
                  [hiccup "1.0.0"]
                  [org.clojure/clojurescript "0.0-1011"]
                  [clj-zoo "1.0.8"]
-                 [clj-zoo-watcher "1.0.7"]
+                 [clj-zoo-watcher "1.0.9"]
                  [zookeeper-clj "0.9.2"]]
   :source-path "src/clj"
   :extra-classpath-dirs ["src/cljs"]
