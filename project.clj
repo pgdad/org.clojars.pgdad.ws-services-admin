@@ -15,13 +15,18 @@
   :cljsbuild {:builds
               [{:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/load"
                 :compiler {:output-to "resources/public/js/load.js"
-                           :optimizations :simple :pretty-print true}}
+                           :optimizations :simple :pretty-print true}
+                :jar true}
                {:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/active"
                 :compiler {:output-to "resources/public/js/active.js"
-                           :optimizations :simple :pretty-print true}}
+                           :optimizations :simple :pretty-print true}
+                :jar true}
                {:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/passive"
                 :compiler {:output-to "resources/public/js/passive.js"
-                           :optimizations :simple :pretty-print true}}]}
+                           :optimizations :simple :pretty-print true}
+                :jar true}]}
   :ring {:handler org.clojars.pgdad.ws-sservices-admin.core/app}
+  :hooks [leiningen.cljsbuild]
+  :aot-compile [org.clojars.pgdad.ws-services-admin.core]
   :main org.clojars.pgdad.ws-services-admin.core)
 

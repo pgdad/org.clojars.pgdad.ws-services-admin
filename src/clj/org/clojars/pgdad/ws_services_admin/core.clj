@@ -7,12 +7,13 @@
   (:use lamina.core
         aleph.http
         (ring.middleware resource file-info)
-        (hiccup core page)))
+        (hiccup core page))
+  (gen-class))
 
-(declare *keepers*)
+(declare zookeepers)
 
 (defn load-handler [channel]
-  (let [servs (loadservice/initialize *keepers*)
+  (let [servs (loadservice/initialize zookeepers)
         ch (:channel @servs)
         ]
     (on-closed channel #(do
@@ -31,24 +32,24 @@
                            (println "HANDLER CLIENT CLOSED CHANNEL")
                            (loadservice/close servs)))
     (receive-all channel #(do
-                             (let [z (zk/connect *keepers*)]
+                             (let [z (zk/connect zookeepers)]
                                (node-f z %)
                                (zk/close z))))
     (siphon ch channel)))
 
 (def active-handler (partial service-handler
                              (fn []
-                               (activeservice/initialize *keepers*))
+                               (activeservice/initialize zookeepers))
                              #(srv/request-passivation %1 %2)
                              ))
 
 (def passive-handler (partial service-handler
                               (fn []
-                                (passiveservice/initialize *keepers*))
+                                (passiveservice/initialize zookeepers))
                               #(srv/request-activation %1 %2)
                               ))
 
-(defn load []
+(defn loadpage []
   (html5
    [:head]
    [:body#thebody
@@ -97,7 +98,7 @@
    :body (f)})
 
 (def wrapped-load-app
-  (-> (partial sync-app load)
+  (-> (partial sync-app loadpage)
       (wrap-resource "public")
       (wrap-file-info)))
 
@@ -142,7 +143,7 @@
        ))))
 
 (defn -main [keepers & args]
-  (def *keepers* keepers)
+  (def zookeepers keepers)
   (try (start-http-server app {:port 8080 :websocket true})
        (catch Exception ex (do
                              (println (str "EXCEPTION: " ex))

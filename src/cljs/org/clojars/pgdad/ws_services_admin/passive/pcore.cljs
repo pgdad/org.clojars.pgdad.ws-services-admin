@@ -1,4 +1,4 @@
-(ns org.clojars.pgdad.ws-services-admin.passive.core
+(ns org.clojars.pgdad.ws-services-admin.passive.pcore
   (:require [goog.async.Delay :as Delay]
             [goog.ui.TableSorter :as TableSorter]
             [goog.ui.Tooltip :as Tooltip]
