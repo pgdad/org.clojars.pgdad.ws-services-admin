@@ -8,7 +8,7 @@
         aleph.http
         (ring.middleware resource file-info)
         (hiccup core page))
-  (gen-class))
+  (:gen-class))
 
 (declare zookeepers)
 
