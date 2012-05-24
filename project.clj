@@ -9,7 +9,8 @@
                  [clj-zoo "1.0.8"]
                  [clj-zoo-watcher "1.0.9"]
                  [zookeeper-clj "0.9.2"]]
-  :source-path "src/clj"
+  :aot-compile [org.clojars.pgdad.ws-services-admin.createpassive
+                org.clojars.pgdad.ws-services-admin.core]  :source-path "src/clj"
   :extra-classpath-dirs ["src/cljs"]
   :plugins [[lein-cljsbuild "0.1.8"]]
   :cljsbuild {:builds
@@ -24,9 +25,12 @@
                {:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/passive"
                 :compiler {:output-to "resources/public/js/passive.js"
                            :optimizations :simple :pretty-print true}
+                :jar true}
+               {:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/createpassive"
+                :compiler {:output-to "resources/public/js/createpassive.js"
+                           :optimizations :simple :pretty-print true}
                 :jar true}]}
   :ring {:handler org.clojars.pgdad.ws-sservices-admin.core/app}
   :hooks [leiningen.cljsbuild]
-  :aot-compile [org.clojars.pgdad.ws-services-admin.core]
   :main org.clojars.pgdad.ws-services-admin.core)
 

@@ -2,6 +2,7 @@
   (:require [org.clojars.pgdad.ws-services-admin.load :as loadservice]
             [org.clojars.pgdad.ws-services-admin.active :as activeservice]
             [org.clojars.pgdad.ws-services-admin.passive :as passiveservice]
+            [org.clojars.pgdad.ws-services-admin.createpassive :as createpassive]
             [zookeeper :as zk]
             [clj-zoo.serverSession :as srv])
   (:use lamina.core
@@ -49,6 +50,19 @@
                               #(srv/request-activation %1 %2)
                               ))
 
+(defn crepass-handler [channel]
+  (println (str "crepass-handler"))
+  (let [servs (createpassive/initialize zookeepers)
+        ch (:channel @servs)
+        ]
+    (on-closed channel #(do
+                          (println "LOAD HANDLER CLIENT CLOSED CHANNEL")
+                          (createpassive/close servs))
+               )
+    (siphon ch channel)
+    )
+)
+
 (defn loadpage []
   (html5
    [:head]
@@ -92,6 +106,23 @@
 
 (def passive (partial active-passive "passive"))
 
+(defn- crepass []
+  (println "crepass page html5 generation")
+  (html5
+   [:style {:type "text/css" :media "screen"}
+    ".table#thetable {border: 1px solid black; float; left; width:300px;}
+     .table_container { width: 300px; margin: 0 auto;}"
+    ]
+
+   [:div#table_container {:class "table_container"}
+    [:table {:class "table"}
+     [:thead [:tr [:th "Service"] [:th "Create Passive"]]]
+     [:tbody#thetablebody]]
+    ]
+   
+   (include-js (str "/js/create-passive.js"))
+   ))
+                  
 (defn sync-app [f request]
   {:status 200
    :headers {"content-type" "text/html"}
@@ -112,6 +143,11 @@
       (wrap-resource "public")
       (wrap-file-info)))
 
+(def wrapped-crepass-app
+  (-> (partial sync-app crepass)
+      (wrap-resource "public")
+      (wrap-file-info)))
+
 (defn app [channel request]
   (let [uri (:uri request)]
     (if (:websocket request)
@@ -125,6 +161,8 @@
        ;; passive services
        (= uri "/passive")
        (passive-handler channel)
+       (= uri "/crepass")
+       (crepass-handler channel)
         )
       
       
@@ -138,6 +176,8 @@
        ;; passive services
        (= uri "/passive")
        (enqueue channel (wrapped-passive-app request))
+       (= uri "/crepass")
+       (enqueue channel (wrapped-crepass-app request))
        :else
        (enqueue channel (wrapped-load-app request))
        ))))
