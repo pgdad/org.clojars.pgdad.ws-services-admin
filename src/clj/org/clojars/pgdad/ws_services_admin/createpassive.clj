@@ -10,26 +10,29 @@
 (def split-pattern #"/")
 
 (defn- cli-reg-created
-  [channel _ _ node]
-  (println (str "CLI REG CREATED: " node))
+  [channel _ node]
+  (println (str "CRE PASS CLI REG CREATED: " node))
   (let [node-parts (clojure.string/split node split-pattern)]
-    (if (= 2 (count node-parts))
-      (println (str "- SENDING: " "c-r " (second node-parts)))
-      (lc/enqueue "c-r " (second node-parts)))))
+    (println (str "CRE PASS CLI REG CRE PARTS: " node-parts))
+    (if (= 3 (count node-parts))
+      (do
+        (println (str "- SENDING: " "c-r " (nth node-parts 2)))
+        (lc/enqueue channel (str "c-r " (nth node-parts 2)))))))
 
 (defn- cli-reg-deleted
-  [channel _ _ node]
+  [channel _ node]
+  (println (str "CRE PASS CLI REG DELETED: " node))
   (let [node-parts (clojure.string/split node split-pattern)]
-    (if (= 2 (count node-parts))
-      (lc/enqueue "d-r " (second node-parts)))))
+    (if (= 3 (count node-parts))
+      (lc/enqueue channel (str "d-r " (nth node-parts 2))))))
 
 (defn- crepassive-created
-  [channel _ _ node]
-  (lc/enqueue (str "c-p" (-> node (.replaceFirst "/" "")))))
+  [channel _ node]
+  (lc/enqueue channel (str "c-p " (-> node (.replaceFirst "/createpassive/" "")))))
 
 (defn- crepassive-deleted
-  [channel _ _ node]
-  (lc/enqueue (str "d-p " (-> node (.replaceFirst "/" "")))))
+  [channel  _ node]
+  (lc/enqueue channel (str "d-p " (-> node (.replaceFirst "/createpassive/" "")))))
 
 (defn initialize
   [keepers]

@@ -10,8 +10,6 @@
 
      (def socket (new js/window.WebSocket wsurl))
 
-     (def splitter (re-pattern " "))
-
      (defn $ [selector]
        (.querySelector js/document (name selector)))
 
@@ -55,7 +53,7 @@
        []
        (if-not @delay
          (swap! delay (fn [& args] (goog.async.Delay. resort resortDealyMS)))
-         (start @delay))
+         (.start @delay))
        )
 
      (defn- element-id [node]
@@ -111,7 +109,7 @@
 
      (set! (.-onmessage socket)
            #(do (let [msg (.-data %)
-                      msg-parts (cstr/split msg splitter)
+                      msg-parts (cstr/split msg (re-pattern " "))
                       action (first msg-parts)]
                   (cond
                    ;; created

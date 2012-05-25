@@ -25,14 +25,15 @@
     )
 )
 
-(defn- service-handler [init-f node-f channel]
+(defn- service-handler [init-f node-f close-f channel]
   (let [servs (init-f)
         ch (:channel @servs)
         ]
     (on-closed channel #(do
                            (println "HANDLER CLIENT CLOSED CHANNEL")
-                           (loadservice/close servs)))
+                           (close-f servs)))
     (receive-all channel #(do
+                             (println (str "SERVICE: " %))
                              (let [z (zk/connect zookeepers)]
                                (node-f z %)
                                (zk/close z))))
@@ -42,12 +43,14 @@
                              (fn []
                                (activeservice/initialize zookeepers))
                              #(srv/request-passivation %1 %2)
+                             activeservice/close
                              ))
 
 (def passive-handler (partial service-handler
                               (fn []
                                 (passiveservice/initialize zookeepers))
                               #(srv/request-activation %1 %2)
+                             passiveservice/close
                               ))
 
 (defn crepass-handler [channel]
@@ -59,6 +62,17 @@
                           (println "LOAD HANDLER CLIENT CLOSED CHANNEL")
                           (createpassive/close servs))
                )
+    (receive-all channel
+      #(let [ [act node] (clojure.string/split % #" ")
+             z-node (str "/createpassive/" node)
+             z (zk/connect zookeepers)]
+          (println (str "CREPAS SERVICE GOT: " %))
+          (if (= act "act")
+            (zk/create-all z z-node :persistent? true)
+            (when (zk/exists z z-node)
+              (zk/delete z z-node)))
+          (zk/close z)))
+     
     (siphon ch channel)
     )
 )
@@ -110,17 +124,19 @@
   (println "crepass page html5 generation")
   (html5
    [:style {:type "text/css" :media "screen"}
-    ".table#thetable {border: 1px solid black; float; left; width:300px;}
-     .table_container { width: 300px; margin: 0 auto;}"
+    ".table {border: 1px solid black; float; left; width:300px;}
+     .table_container { width: 300px; margin: 0 auto;}
+     .act { background: red;}
+     .pas { background: green;}"
     ]
 
    [:div#table_container {:class "table_container"}
-    [:table {:class "table"}
+    [:table#thetable {:class "table"}
      [:thead [:tr [:th "Service"] [:th "Create Passive"]]]
      [:tbody#thetablebody]]
     ]
    
-   (include-js (str "/js/create-passive.js"))
+   (include-js (str "/js/createpassive.js"))
    ))
                   
 (defn sync-app [f request]

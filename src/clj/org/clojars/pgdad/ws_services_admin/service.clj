@@ -10,6 +10,7 @@
 
 (defn- service-created
   [client channel region _ node]
+  (println (str "CRATED NODE:" node))
   (let [data (String. (:data (zk/data client node)) "UTF-8")
         [_ _ url] (clojure.string/split-lines data)
         [_ _ _ service major minor micro] (cstr/split node (re-pattern "/"))
@@ -20,6 +21,7 @@
 
 (defn- service-deleted
   [channel region _ node]
+  (println (str "DELETED NODE: " node))
   (lc/enqueue channel (str "d " region " " node "\n")))
 
 

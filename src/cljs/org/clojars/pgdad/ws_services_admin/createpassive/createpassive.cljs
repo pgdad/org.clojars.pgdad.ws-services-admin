@@ -1,6 +1,12 @@
 (ns org.clojars.pgdad.ws-services-admin.createpassive.createpassive
   (:require [goog.ui.TableSorter :as TableSorter]
-            [clojure.string :as cstr]))
+            [clojure.string :as cstr]
+            [goog.ui.Tooltip :as Tooltip]
+            [goog.ui.Button :as Button]
+            [goog.ui.decorate :as decorate]
+            [goog.events :as Events]
+            [goog.events.EventType :as EventType]
+            [goog.object :as gobject]))
 
 (def surl js/window.location.href)
 
@@ -48,9 +54,11 @@
     )
   (resort))
 
+(def actTooltipMsg "PUSH ME")
+
 (defn addrow [service create-passive?]
        (let [l (.-length (.-rows thetablebody))
-             row (.insertRow tbl l)
+             row (.insertRow thetablebody l)
              cell0 (.insertCell row 0)
              cell1 (.insertCell row 1)]
          (.appendChild cell0 (.createTextNode js/document service))
@@ -67,11 +75,17 @@
            (goog.events.listen googButton
                                (.-ACTION goog.ui.Component.EventType)
                                #(do
-                                  (let [btnClass (.getAttribute button "class")]
+                                  (let [btnClass (.-className button)]
+                                    (.log js/console (str "PUSHED: " %&))
+                                    (.log js/console (str "BUTTON: " button))
+                                    (.log js/console (str "BUTTONG: " btnClass))
+                                    (.log js/console (str "GUTTON: " googButton))
                                     (if (= btnClass "act")
                                       (.setAttribute button "class" "pas")
-                                      (.setAttribute button "class" "act")))
-                                  (.send socket (.getAttribute button "value"))))
+                                      (.setAttribute button "class" "act"))
+                                    (.send socket
+                                      (str (if (= bntClass "act") "pas " "act ")
+                                           (.-value button))))))
            )
          (.setAttribute row "id"  (cstr/replace service "/" ""))
          (resort)
@@ -79,26 +93,27 @@
 
 (defn- update-table
   [service create-passive?]
-  (let [row (element-id service)]
-    (if row
-      (let [btn (element-id (str "btn"  service))
-            btnClass (.getAttribute btn "class")]
-        (if (= btnClass "act")
-          (.setAttribute btn "class" "pas")
-          (.setAttribute btn "class" "act")
-          )))))
+  (.log js/console (str "UPDATING TABLE FOR: " service))
+  (if-let [btn ($$ (str "btn"  service))]
+    (let [btnClass (.-class btn)]
+      (if (= btnClass "act")
+        #_(.setAttribute btn "class" "pas")
+        (.log js/console (str "SETTING CLASS TO PAS: " btn))
+        #_(.setAttribute btn "class" "act")
+        (.log js/console (str "SETTING CLASS TO PAS: " btn))
+      ))
+     (addrow service create-passive?A)))
 
 (set! (.-onmessage socket)
       #(do (let [msg (.-data %)
                  msg-parts (cstr/split msg splitter)
                  action (first msg-parts)]
+             (.log js/console (str "GOT MSG: " msg))
              (cond
               ;; created registration
               (= action "c-r")
               (let [node (second msg-parts)]
                 ;; only insert the service if it isn't there already,
-                ;; it might already exists if the createpassive entries contain it
-                ;; it arrived that way
                 (if-not (contains? @services node)
                   (do
                     (swap! services assoc node false)
