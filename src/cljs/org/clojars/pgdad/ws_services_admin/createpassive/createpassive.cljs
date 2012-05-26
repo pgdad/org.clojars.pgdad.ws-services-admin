@@ -54,7 +54,7 @@
     )
   (resort))
 
-(def actTooltipMsg "PUSH ME")
+(def actTooltipMsg "Push when green -> new creations passive")
 
 (defn addrow [service create-passive?]
        (let [l (.-length (.-rows thetablebody))
@@ -76,16 +76,12 @@
                                (.-ACTION goog.ui.Component.EventType)
                                #(do
                                   (let [btnClass (.-className button)]
-                                    (.log js/console (str "PUSHED: " %&))
-                                    (.log js/console (str "BUTTON: " button))
-                                    (.log js/console (str "BUTTONG: " btnClass))
-                                    (.log js/console (str "GUTTON: " googButton))
+                                    (.send socket
+                                           (str btnClass " " (.-value button)))
                                     (if (= btnClass "act")
                                       (.setAttribute button "class" "pas")
                                       (.setAttribute button "class" "act"))
-                                    (.send socket
-                                      (str (if (= bntClass "act") "pas " "act ")
-                                           (.-value button))))))
+                                    )))
            )
          (.setAttribute row "id"  (cstr/replace service "/" ""))
          (resort)
@@ -93,7 +89,6 @@
 
 (defn- update-table
   [service create-passive?]
-  (.log js/console (str "UPDATING TABLE FOR: " service))
   (if-let [btn ($$ (str "btn"  service))]
     (let [btnClass (.-class btn)]
       (if (= btnClass "act")
