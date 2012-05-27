@@ -11,17 +11,13 @@
 
 (defn- cli-reg-created
   [channel _ node]
-  (println (str "CRE PASS CLI REG CREATED: " node))
   (let [node-parts (clojure.string/split node split-pattern)]
-    (println (str "CRE PASS CLI REG CRE PARTS: " node-parts))
     (if (= 3 (count node-parts))
       (do
-        (println (str "- SENDING: " "c-r " (nth node-parts 2)))
         (lc/enqueue channel (str "c-r " (nth node-parts 2)))))))
 
 (defn- cli-reg-deleted
   [channel _ node]
-  (println (str "CRE PASS CLI REG DELETED: " node))
   (let [node-parts (clojure.string/split node split-pattern)]
     (if (= 3 (count node-parts))
       (lc/enqueue channel (str "d-r " (nth node-parts 2))))))

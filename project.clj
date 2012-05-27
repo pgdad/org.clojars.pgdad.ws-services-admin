@@ -12,13 +12,9 @@
   :aot-compile [org.clojars.pgdad.ws-services-admin.createpassive
                 org.clojars.pgdad.ws-services-admin.core]  :source-path "src/clj"
   :extra-classpath-dirs ["src/cljs"]
-  :plugins [[lein-cljsbuild "0.1.8"]]
+  :plugins [[lein-cljsbuild "0.2.0"]]
   :cljsbuild {:builds
-              [{:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/load"
-                :compiler {:output-to "resources/public/js/load.js"
-                           :optimizations :simple :pretty-print true}
-                }
-               {:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/active"
+              [{:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/active"
                 :compiler {:output-to "resources/public/js/active.js"
                            :optimizations :simple :pretty-print true}
                 }
@@ -27,6 +23,10 @@
                            :optimizations :simple :pretty-print true}}
                {:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/createpassive"
                 :compiler {:output-to "resources/public/js/createpassive.js"
+                           :optimizations :simple :pretty-print true}
+                }
+               {:source-path "src/cljs/org/clojars/pgdad/ws_services_admin/load"
+                :compiler {:output-to "resources/public/js/load.js"
                            :optimizations :simple :pretty-print true}
                 }]}
   :ring {:handler org.clojars.pgdad.ws-sservices-admin.core/app}

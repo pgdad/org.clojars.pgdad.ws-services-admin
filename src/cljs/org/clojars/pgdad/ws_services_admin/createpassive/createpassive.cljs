@@ -14,9 +14,6 @@
 
 (def socket (new js/window.WebSocket wsurl))
 
-;; map service -> createpassive status (boolean)
-(def services (atom {}))
-
 (def splitter (re-pattern " "))
 
 (defn $ [selector]
@@ -54,7 +51,7 @@
     )
   (resort))
 
-(def actTooltipMsg "Push when green -> new creations passive")
+(def actTooltipMsg "Push to toggle between green and red.\nWhen green, new service instances are created passive.\nWhen red, new service instances are created active.")
 
 (defn addrow [service create-passive?]
        (let [l (.-length (.-rows thetablebody))
@@ -68,7 +65,7 @@
            (set! (.-className btnTooltip) "ButtonTooltip")
            (.decorate googButton button)
            (.setAttribute button "value" service)
-           (.setAttribute button "class" (if create-passive? "act" "pas"))
+           (.setAttribute button "class" (if create-passive? "pas" "act"))
            (.setAttribute cell1 "type" "button")
            (.appendChild cell1 button)
            (.setAttribute button "id" (str "btn" service))
@@ -90,50 +87,37 @@
 (defn- update-table
   [service create-passive?]
   (if-let [btn ($$ (str "btn"  service))]
-    (let [btnClass (.-class btn)]
-      (if (= btnClass "act")
-        #_(.setAttribute btn "class" "pas")
-        (.log js/console (str "SETTING CLASS TO PAS: " btn))
-        #_(.setAttribute btn "class" "act")
-        (.log js/console (str "SETTING CLASS TO PAS: " btn))
-      ))
-     (addrow service create-passive?A)))
+    (if create-passive?
+      (.setAttribute btn "class" "pas")
+      (.setAttribute btn "class" "act"))
+    (addrow service create-passive?)))
 
 (set! (.-onmessage socket)
       #(do (let [msg (.-data %)
                  msg-parts (cstr/split msg splitter)
                  action (first msg-parts)]
-             (.log js/console (str "GOT MSG: " msg))
              (cond
               ;; created registration
               (= action "c-r")
               (let [node (second msg-parts)]
                 ;; only insert the service if it isn't there already,
-                (if-not (contains? @services node)
-                  (do
-                    (swap! services assoc node false)
-                    (update-table node false))))
+                (update-table node false))
               
               ;; deleted registration
               (= action "d-r")
               (let [node (second msg-parts)]
-                (swap! services dissoc node)
                 (rmrow node))
               
               ;; created crepassive
               (= action "c-p")
               (let [node (second msg-parts)]
-                (swap! services assoc node true)
                 (update-table node true))
 
               ;; deleted crepassive
               (= action "d-p")
               ;; only set to false if it still exists
               (let [node (second msg-parts )]
-                (if (contains? @services node)
-                  (do
-                    (swap! services assoc node false)
-                    (update-table node false))))
+                (update-table node false))
               ))))
 
 #_(set! (.-onclose socket) #(do (-> thebody (apptext "SERVER CONN CLOSED."))))

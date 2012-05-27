@@ -127,7 +127,8 @@
     ".table {border: 1px solid black; float; left; width:300px;}
      .table_container { width: 300px; margin: 0 auto;}
      .act { background: red;}
-     .pas { background: green;}"
+     .pas { background: green;}
+     .ButtonTooltip { background: #C0C0FF; color: infotext; border: 1px solid infotext; padding: 1px;}"
     ]
 
    [:div#table_container {:class "table_container"}
